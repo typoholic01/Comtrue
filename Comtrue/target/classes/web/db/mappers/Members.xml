@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+<mapper namespace="Members">
+
+	<!-- 						CREATE 						-->
+	<!-- 유저 입력 -->
+	<insert id="insertMember" parameterType="Member" useGeneratedKeys="false">
+		INSERT INTO MEMBERS(
+			MEMBER_NO, NAME, PHONE, RANK, EMAIL
+		)
+		VALUES(
+			#{memberNo}, #{name}, #{phone}, #{rank}, #{email}
+		)
+	</insert>
+
+	<!-- 						READ 						-->
+	<!-- 직원 가져오기 -->	
+	<select id="getMember" resultType="Member" parameterType="Integer">
+		SELECT 
+			MEMBER_NO as memberNo, 
+			NAME, 
+			PHONE, 
+			RANK, 
+			EMAIL
+		FROM MEMBERS
+		WHERE MEMBER_NO = #{memberNo}
+	</select>
+	
+	<!-- 직원 목록 가져오기 -->	
+	<select id="getMemberList" resultType="Member" parameterType="QueryList">
+		SELECT 
+			MEMBER_NO as memberNo, 
+			NAME, 
+			PHONE, 
+			RANK, 
+			EMAIL
+		FROM (
+				SELECT MEMBER_NO, NAME, PHONE, RANK, EMAIL,
+				ROW_NUMBER() OVER (ORDER BY ${column} ${scending}) R
+				FROM MEMBERS
+				WHERE 1 = 1
+				<if test="query != null and query != ''">
+					<bind name="query" value="'%'+query+'%'"/>	
+				AND ${column} LIKE #{query}
+				</if>
+		)
+	</select>
+	
+	<!-- 검색된 직원 목록 가져오기 -->	
+	<select id="getMemberSearchList" resultType="Member" parameterType="QueryList">
+		SELECT 
+			MEMBER_NO as memberNo, 
+			NAME, 
+			PHONE, 
+			RANK, 
+			EMAIL
+		FROM (
+				SELECT MEMBER_NO, NAME, PHONE, RANK, EMAIL,
+				ROW_NUMBER() OVER (ORDER BY ${column} ${scending}) R
+				FROM MEMBERS
+				WHERE 1 = 1
+				<if test="query != null and query != ''">
+					<bind name="query" value="'%'+query+'%'"/>	
+				AND ${column} LIKE #{query}
+				</if>
+		)
+	</select>
+	
+	<!-- 						UPDATE 						-->	
+	<update id="updateMember" parameterType="QueryUpdate">
+		UPDATE MEMBERS
+			SET MEMBER_NO = #{memberNo}, 
+				NAME = #{name},
+				PHONE = #{phone},
+				RANK = #{rank},
+				EMAIL = #{email}
+		WHERE MEMBER_NO = #{originalMemberNo}
+	</update>
+	
+	<!-- 						DELETE 						-->
+	<delete id="deleteMember" parameterType="Member">
+		DELETE MEMBERS
+		WHERE MEMBER_NO = #{memberNo}
+	
+	</delete>
+</mapper>
